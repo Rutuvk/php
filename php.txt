@@ -1,0 +1,202 @@
+CurdController
+<?php
+
+namespace App\Http\Controllers;
+use App\Models\Curd;
+use Illuminate\Http\Request;
+
+class CurdController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $cruds = Curd::all(); 
+         return view('index', compact('cruds')); 
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+          $request->validate([ 
+             'first_name'=>'required', 
+             'last_name'=>'required', 
+             'rollnum'=>'required',
+            ]); 
+            $crud = new Curd; 
+            $crud->first_name = $request->get('first_name'); 
+            $crud->last_name = $request->get('last_name'); 
+            $crud->rollnum = $request->get('rollnum');
+            $crud->save(); 
+            echo "Record Inserted"; 
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+         $crud= Curd::find($id); 
+         return view('edit', compact('crud'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $crud= Curd::find($id); 
+        $request->validate([ 
+            'first_name'=>'required', 
+            'last_name'=>'required', 
+            'rollnum'=>'required',
+           ]); 
+           $crud->first_name = $request->get('first_name'); 
+           $crud->last_name = $request->get('last_name'); 
+           $crud->rollnum = $request->get('rollnum');
+           $crud->save(); 
+           echo "Record updated"; 
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+        $crud=Curd::find($id);
+        $crud->delete();
+
+    }
+}
+Curd.php model
+
+class Curd extends Model
+{
+protected $table='user';
+protected $fillable=['first_name','last_name','rollnum']; 
+}
+create.blade.php
+<html>
+    <body>
+    <form action="{{ route('users.store') }}" method="post">
+        @csrf
+        <label for="fname">FirstName</label>
+        <input type="text" name="first_name">
+        <br><br>
+        <label for="lname">LastName</label>
+        <input type="text" name="last_name">
+        <br><br>
+        <label for="rollnum">Roll Number</label>
+        <input type="text" name="rollnum">
+        <br><br>
+        <button type="submit">Insert</button>
+
+    </form>
+    </body>
+</html>
+edit.blade.php
+<html>
+    <body>
+    <form action="{{route('users.update',$crud->id) }}"  method="post">
+        @csrf
+        @method('PATCH')
+
+        <label for="fname">FirstName</label>
+        <input type="text" name="first_name" value="{{$crud->first_name}}">
+        <br><br>
+        <label for="lname">LastName</label>
+        <input type="text" name="last_name" value="{{$crud->last_name}}">
+        <br><br>
+        <label for="rollnum">Roll Number</label>
+        <input type="text" name="rollnum" value="{{$crud->rollnum}}">
+        <br><br>
+        <button type="submit">Update</button>
+
+    </form>
+    </body> 
+</html>
+index.blade.php
+<html>
+<body>
+<table border="1px">  
+<thead>  
+<tr>  
+<td>  
+ID </td>  
+<td>  
+First Name </td>  
+<td>  
+Last Name </td>  
+<td>  
+rollnum </td>  
+</tr>  
+</thead>  
+<tbody>  
+@foreach($cruds as $crud)  
+        <tr>  
+            <td>{{$crud->id}}</td>  
+            <td>{{$crud->first_name}}</td>  
+            <td>{{$crud->last_name}}</td>  
+            <td>{{$crud->rollnum}}</td>  
+<td>
+                
+                <form action="{{ route('users.destroy', $crud->id) }}" method="POST">
+    @csrf
+    @method('DELETE')
+    <button type="submit">Delete</button>
+</form>
+
+</td>  
+<td >  
+<form action="{{ route('users.edit', $crud->id) }}" method="post">  
+                  @csrf  
+        <button class="btn btn-danger" type="submit">Edit</button>  
+                </form>  
+</td>   
+  
+</tr>  
+@endforeach  
+</tbody>  
+</table>  
+</body>
+</html>
+web.php
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CurdController;
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/insert', function () {
+    return view('create');
+    });
+    
+Route::post('/users', [CurdController::class,'store'])->name('users.store');
+    
+Route::get('/show', [CurdController::class,'index']);
+Route::post('/users/{id}', [CurdController::class,'edit'])->name('users.edit');
+Route::delete('/users/{id}', [CurdController::class,'destroy'])->name('users.destroy');
+Route::patch('/users/{id}', [CurdController::class,'update'])->name('users.update');
